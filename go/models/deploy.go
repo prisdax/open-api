@@ -153,3 +153,34 @@ func (m *Deploy) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
+
+// DeploySiteCapabilities deploy site capabilities
+// swagger:model DeploySiteCapabilities
+type DeploySiteCapabilities struct {
+
+	// large media enabled
+	LargeMediaEnabled bool `json:"large_media_enabled,omitempty"`
+}
+
+// Validate validates this deploy site capabilities
+func (m *DeploySiteCapabilities) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *DeploySiteCapabilities) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *DeploySiteCapabilities) UnmarshalBinary(b []byte) error {
+	var res DeploySiteCapabilities
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
