@@ -357,10 +357,15 @@ func (n *Netlify) WaitUntilDeployLive(ctx context.Context, d *models.Deploy) (*m
 }
 
 func (n *Netlify) uploadFiles(ctx context.Context, d *models.Deploy, files *deployFiles, observer DeployObserver, t uploadType, timeout time.Duration) error {
+	log := context.GetLogger(ctx)
 	sharedErr := &uploadError{err: nil, mutex: &sync.Mutex{}}
 	sem := make(chan int, n.uploadLimit)
 	wg := &sync.WaitGroup{}
-	defer wg.Wait()
+	defer func() {
+		log.Info("Started wait for waitgroup")
+		wg.Wait()
+		log.Info("Done waiting for waitgroup")
+	}()
 
 	var required []string
 	switch t {
@@ -379,7 +384,7 @@ func (n *Netlify) uploadFiles(ctx context.Context, d *models.Deploy, files *depl
 		}
 	}
 
-	context.GetLogger(ctx).Infof("Uploading %v files", count)
+	log.Infof("Uploading %v files", count)
 
 	for _, sha := range required {
 		if files, exist := files.Hashed[sha]; exist {
@@ -391,6 +396,7 @@ func (n *Netlify) uploadFiles(ctx context.Context, d *models.Deploy, files *depl
 
 					go n.uploadFile(ctx, d, file, observer, t, timeout, wg, sem, sharedErr)
 				case <-ctx.Done():
+					log.Info("Context terminated, aborting file upload")
 					return errors.Wrap(ctx.Err(), "aborted file upload early")
 				}
 			}
